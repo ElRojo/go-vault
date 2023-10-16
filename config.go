@@ -7,7 +7,7 @@ type kv struct {
 
 type secret struct {
 	engine string
-	Keys   []kv
+	keys   []kv
 }
 
 var (
@@ -16,7 +16,7 @@ var (
 	newSecrets = []*secret{
 		{
 			engine: "my-folder",
-			Keys: []kv{
+			keys: []kv{
 				{
 					data: map[string]interface{}{
 						"MDM_API_KEY":              "",
@@ -32,7 +32,7 @@ var (
 						"HAM_SECRET_API_KEY":       "",
 						"MSC_PRIVATE_KEY":          "",
 						"SECRET_PATH":              "",
-						"VB_SECRET_API_KEY":        "sdfasdf",
+						"VB_SECRET_API_KEY":        "",
 						"VAR_SECRET":               "",
 						"TEST_SECRET_KEY1":         "",
 						"PARC_GPS_KEY":             "",
@@ -54,7 +54,7 @@ var (
 	legacySecrets = []*secret{
 		{
 			engine: "test-engine",
-			Keys: []kv{
+			keys: []kv{
 				{
 					data: map[string]interface{}{
 						"username_for_oal": "",
@@ -86,7 +86,7 @@ var (
 		},
 		{
 			engine: "test-engine-1",
-			Keys: []kv{
+			keys: []kv{
 				{
 					data: map[string]interface{}{
 						"var_sec": "",
@@ -139,7 +139,7 @@ var (
 		},
 		{
 			engine: "test-engine-2",
-			Keys: []kv{
+			keys: []kv{
 				{
 					data: map[string]interface{}{
 						"conn_string": "",
@@ -151,7 +151,7 @@ var (
 		},
 		{
 			engine: "postgres",
-			Keys: []kv{
+			keys: []kv{
 				{
 					data: map[string]interface{}{
 						"conn_string": "",
@@ -163,7 +163,7 @@ var (
 		},
 		{
 			engine: "prc_gps",
-			Keys: []kv{
+			keys: []kv{
 				{
 					data: map[string]interface{}{
 						"gps_key": "",
@@ -174,7 +174,7 @@ var (
 		},
 		{
 			engine: "aws",
-			Keys: []kv{
+			keys: []kv{
 				{data: map[string]interface{}{
 					"aws-creds": "",
 				},
@@ -184,7 +184,7 @@ var (
 		},
 		{
 			engine: "supersecrets",
-			Keys: []kv{
+			keys: []kv{
 				{
 					data: map[string]interface{}{
 						"MSSQL_CONN_STRING":   "",

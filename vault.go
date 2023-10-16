@@ -15,7 +15,7 @@ import (
 )
 
 type vaulter interface {
-	hydrateFlatSecretsStruct(ctx context.Context, c *vault.Client)
+	hydrateNewSecretsStruct(ctx context.Context, c *vault.Client)
 	addEnginesToList(ctx context.Context, client *vault.Client) []string
 	createEngines(ctx context.Context, client *vault.Client, secret *secret) string
 	writeSecret(ctx context.Context, client *vault.Client, path string, data map[string]interface{}) error
@@ -74,7 +74,7 @@ func ReadSecret(ctx context.Context, c *vault.Client, path string, secret string
 func createDataInVault(ctx context.Context, client *vault.Client, v vaulter, c Config) {
 	for _, secret := range c.Secrets {
 		if slices.Contains(v.addEnginesToList(ctx, client), secret.engine+"/") {
-			for _, kv := range secret.Keys {
+			for _, kv := range secret.keys {
 				path := fmt.Sprintf("/%v/data/%v", secret.engine, kv.path)
 				err := v.writeSecret(ctx, client, path, kv.data)
 				if err != nil {
@@ -89,14 +89,14 @@ func createDataInVault(ctx context.Context, client *vault.Client, v vaulter, c C
 	}
 }
 
-func (v *acmeVault) hydrateFlatSecretsStruct(ctx context.Context, c *vault.Client) {
+func (v *acmeVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client) {
 	for _, secret := range newSecrets {
-		for _, kv := range secret.Keys {
+		for _, kv := range secret.keys {
 			for key := range kv.data {
 				if kv.data[key] == "" {
-					tr := secretsMap[key]
-					if tr.path != "" {
-						value, err := ReadSecret(ctx, c, tr.path, tr.secret)
+					sm := secretsMap[key]
+					if sm.path != "" {
+						value, err := ReadSecret(ctx, c, sm.path, sm.secret)
 						if err != nil {
 							log.Err(err).Msg("")
 						}
@@ -134,12 +134,11 @@ func InitVaultClient() (context.Context, *vault.Client) {
 	return ctx, client
 }
 
-func runVault(v vaulter, c Config) string {
+func runVault(v vaulter, c Config, copy bool) string {
 	ctx, client := InitVaultClient()
-	copy := getEnv().vaultCopy
-	if copy {
-		fmt.Println("Copying")
-		v.hydrateFlatSecretsStruct(ctx, client)
+	s := getEnv().vaultConfig
+	if copy && !s {
+		v.hydrateNewSecretsStruct(ctx, client)
 	}
 	for _, secret := range c.Secrets {
 		log.Info().Msg(v.createEngines(ctx, client, secret))

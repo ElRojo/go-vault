@@ -52,14 +52,14 @@ func (v *mockVault) writeSecret(ctx context.Context, client *vault.Client, path 
 	return nil
 }
 
-func (v *mockVault) hydrateFlatSecretsStruct(ctx context.Context, c *vault.Client) {
+func (v *mockVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client) {
 	for _, secret := range newSecrets {
-		for _, kv := range secret.Keys {
+		for _, kv := range secret.keys {
 			for key := range kv.data {
 				if kv.data[key] == "" {
-					tr := secretsMap[key]
-					if tr.path != "" {
-						value := "secret"
+					sm := secretsMap[key]
+					if sm.path != "" {
+						value := "copiedSecret"
 						kv.data[key] = value
 					}
 				}
@@ -73,7 +73,7 @@ func TestVaultLegacy(t *testing.T) {
 	c := &Config{
 		Secrets: legacySecrets,
 	}
-	log.Info().Msg(runVault(v, *c))
+	log.Info().Msg(runVault(v, *c, false))
 }
 
 func TestVaultNew(t *testing.T) {
@@ -81,7 +81,15 @@ func TestVaultNew(t *testing.T) {
 	c := &Config{
 		Secrets: newSecrets,
 	}
-	log.Info().Msg(runVault(v, *c))
+	log.Info().Msg(runVault(v, *c, false))
+}
+
+func TestVaultNewWithCopy(t *testing.T) {
+	v := &mockVault{}
+	c := &Config{
+		Secrets: newSecrets,
+	}
+	log.Info().Msg(runVault(v, *c, true))
 }
 
 func TestLegacyVaultConfig(t *testing.T) {

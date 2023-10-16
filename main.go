@@ -15,5 +15,6 @@ func main() {
 	c := Config{
 		Secrets: s,
 	}
-	fmt.Println(runVault(v, c))
+	cp := getEnv().vaultCopy
+	fmt.Println(runVault(v, c, cp))
 }
