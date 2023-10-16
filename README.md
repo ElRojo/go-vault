@@ -12,6 +12,8 @@
 This poject was used previously as a way to easily stand up multiple Vault instances with the same footprint. I also migrated us from an older vault architecture with duplicate entries to a simpler flat-file approach.
 I utilized the [vault-client-go](https://pkg.go.dev/github.com/hashicorp/vault-client-go@v0.4.1) package.
 
+This was necesary due to a lack of access to Terraform.
+
 ---
 
 ## Config
