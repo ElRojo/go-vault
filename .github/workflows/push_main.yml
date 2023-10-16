@@ -1,0 +1,20 @@
+name: Push Main
+on:
+  push:
+    branches: main
+
+jobs:
+  go-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.0
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v4.1.0
+        with:
+          go-version: 'stable'
+
+      - name: Run tests
+        run: |
+          go test -v ./...
