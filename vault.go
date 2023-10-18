@@ -112,7 +112,7 @@ func InitVaultClient() (context.Context, *vault.Client) {
 	var (
 		ctx       = context.Background()
 		url       = getEnv().vaultUrl
-		namespace = fmt.Sprintf("/admin/%s/%s", strings.ToLower(getEnv().vaultNs), getEnv().env)
+		namespace = fmt.Sprintf("%s/%s", strings.ToLower(getEnv().vaultNs), getEnv().env)
 		token     = getEnv().vaultTkn
 	)
 
