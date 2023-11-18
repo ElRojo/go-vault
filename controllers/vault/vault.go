@@ -103,7 +103,7 @@ func (v *AcmeVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client
 	}
 }
 
-func (s AcmeVault) InitVaultClient(token string, url string) (context.Context, *vault.Client, error) {
+func (s *AcmeVault) InitVaultClient(token string, url string) (context.Context, *vault.Client, error) {
 	var ctx = context.Background()
 
 	client, err := vault.New(

@@ -53,7 +53,7 @@ docker-compose up
 
 <details>
  <summary><b> POST http://localhost:4269/vault </b></summary>
-  
+
 ### Vault Request Object
 
 | property     | type   | value example                   | required | purpose                                                                                                                                   |
@@ -147,7 +147,7 @@ This function takes the path for the given secret, and then searches the `newSec
 
 ## Vault
 
-Given the information above I hope that the vault.go file is self explanatory. These are all the functions necessary to authenticate with vault and then read / write secrets as necessary. I decided to export the `ReadSecrets()` and `InitVaultClient()` functions in the case that this project were to expand into multiple packages.
+Given the information above I hope that the vault.go file is self explanatory. These are all the functions necessary to authenticate with vault and then read / write secrets as necessary.
 
 ### Vault Test
 
