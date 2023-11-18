@@ -1,4 +1,4 @@
-# go-vault-example
+# go-vault
 
 - [Quickstart](#quickstart)
 - [config.go](#config)
