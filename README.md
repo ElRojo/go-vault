@@ -1,4 +1,4 @@
-# go-vault-example
+# go-vault
 
 - [config.go](#config)
 - [envs.go](#envs)
