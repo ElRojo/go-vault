@@ -1,1 +1,13 @@
 .DS_Store
+./vendor
+./vscode
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+**/*
+!**/*.go
+!Dockerfile
+!docker-compose.yml
+!**/

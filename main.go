@@ -1,20 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"go-vault/api"
 )
 
 func main() {
-	var s []*secret
-	v := &acmeVault{}
-	if !getEnv().vaultConfig {
-		s = newSecrets
-	} else {
-		s = legacySecrets
+	s := &api.APIServer{
+		ListenerAddress: "4269",
+		CORS:            "*",
 	}
-	c := Config{
-		Secrets: s,
-	}
-	cp := getEnv().vaultCopy
-	fmt.Println(runVault(v, c, cp))
+	s.Run()
 }
