@@ -2,7 +2,6 @@ package utility
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"testing"
 
@@ -19,7 +18,7 @@ type vaultRequestTest struct {
 
 func TestValidateRequestFields(t *testing.T) {
 	testVaultReq := &vaultRequestTest{}
-	req := `{ 
+	req := `{
 		"useLegacy":  true,
 		"copyLegacy": true,
 		"vaultToken": "dev-only-token",
@@ -29,7 +28,6 @@ func TestValidateRequestFields(t *testing.T) {
 		log.Error().Err(err)
 	}
 	err := ValidateRequestFields(testVaultReq)
-	fmt.Print(err)
 	if ok := assert.NoError(t, err); !ok {
 		log.Error().Err(err)
 	}
@@ -44,6 +42,5 @@ func TestValidateRequestFieldsFail(t *testing.T) {
 	err := ValidateRequestFields(testVaultReq)
 	if ok := assert.Error(t, err, err); !ok {
 		log.Error().Msg("Fields did not fail and should!")
-
 	}
 }
