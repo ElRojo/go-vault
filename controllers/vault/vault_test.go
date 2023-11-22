@@ -30,19 +30,19 @@ var resp = responseMock[engineDataMock]{
 	},
 }
 
-func (v *mockVault) addEnginesToList(ctx context.Context, client *vault.Client) ([]string, error) {
+func (v *mockVault) makeEngineSlice(ctx context.Context, client *vault.Client) ([]string, error) {
 	engineSlice := []string{}
-	for eng := range v.getSecretEngines(ctx, client) {
+	for eng := range v.GetSecretEngine(ctx, client) {
 		engineSlice = append(engineSlice, eng)
 	}
 	return engineSlice, nil
 }
 
-func (v *mockVault) createEngines(ctx context.Context, client *vault.Client, secret *secret) (string, error) {
-	return "Processed: " + secret.engine, nil
+func (v *mockVault) createEngines(ctx context.Context, client *vault.Client, secret *Secret) (string, error) {
+	return "Processed: " + secret.Engine, nil
 }
 
-func (v *mockVault) getSecretEngines(ctx context.Context, client *vault.Client) map[string]interface{} {
+func (v *mockVault) GetSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{} {
 	return resp.data.engine
 }
 
@@ -73,15 +73,15 @@ func (v *mockVault) InitVaultClient(token string, url string) (context.Context, 
 	return ctx, client, nil
 }
 
-func (v *mockVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*secret, secretMap map[string]secretMap) {
+func (v *mockVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) {
 	for _, secret := range s {
-		for _, kv := range secret.keys {
-			for key := range kv.data {
-				if kv.data[key] == "" {
+		for _, kv := range secret.Keys {
+			for key := range kv.Data {
+				if kv.Data[key] == "" {
 					sm := secretMap[key]
 					if sm.path != "" {
 						value := "copiedSecret"
-						kv.data[key] = value
+						kv.Data[key] = value
 					}
 				}
 			}
@@ -97,7 +97,12 @@ func TestVaultLegacy(t *testing.T) {
 		Token:  "",
 		URL:    "",
 	}
-	r, err := RunVault(v, c)
+	secrets := InitLegacySecrets()
+	ctx, client, err := v.InitVaultClient(c.Token, c.URL)
+	if err != nil {
+		return
+	}
+	r, err := InitVault(ctx, client, v, secrets, c)
 	if err != nil {
 		log.Err(err)
 	}
@@ -108,11 +113,16 @@ func TestVaultNew(t *testing.T) {
 	v := &mockVault{}
 	c := VaultConfig{
 		Copy:   false,
-		Legacy: false,
+		Legacy: true,
 		Token:  "",
 		URL:    "",
 	}
-	r, err := RunVault(v, c)
+	secrets := InitNewSecrets()
+	ctx, client, err := v.InitVaultClient(c.Token, c.URL)
+	if err != nil {
+		return
+	}
+	r, err := InitVault(ctx, client, v, secrets, c)
 	if err != nil {
 		log.Err(err)
 	}
@@ -127,7 +137,12 @@ func TestVaultNewWithCopy(t *testing.T) {
 		Token:  "",
 		URL:    "",
 	}
-	r, err := RunVault(v, c)
+	secrets := InitNewSecrets()
+	ctx, client, err := v.InitVaultClient(c.Token, c.URL)
+	if err != nil {
+		log.Err(err)
+	}
+	r, err := InitVault(ctx, client, v, secrets, c)
 	if err != nil {
 		log.Err(err)
 	}
@@ -135,21 +150,21 @@ func TestVaultNewWithCopy(t *testing.T) {
 }
 
 func TestLegacyVaultConfig(t *testing.T) {
-	secrets := initLegacySecrets()
+	secrets := InitLegacySecrets()
 	for _, s := range secrets {
-		ok := assert.IsType(t, &secret{}, s)
+		ok := assert.IsType(t, &Secret{}, s)
 		if !ok {
-			log.Warn().Msg("Secret stored in" + s.engine + " is malformed")
+			log.Warn().Msg("Secret stored in" + s.Engine + " is malformed")
 		}
 	}
 }
 
 func TestFlatVaultConfig(t *testing.T) {
-	secrets := initNewSecrets()
+	secrets := InitNewSecrets()
 	for _, s := range secrets {
-		ok := assert.IsType(t, &secret{}, s)
+		ok := assert.IsType(t, &Secret{}, s)
 		if !ok {
-			log.Warn().Msg("Secret stored in" + s.engine + " is malformed")
+			log.Warn().Msg("Secret stored in" + s.Engine + " is malformed")
 		}
 	}
 }

@@ -26,6 +26,8 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 
 func (s *APIServer) Run() {
 	http.Handle("/vault", makeHTTPHandlerFunc(s.handleVault))
+    http.Handle("/vault/secret", makeHTTPHandlerFunc(s.handleSecret))
+    // http.Handle("/vault/engine", makeHTTPHandlerFunc(s.handleEngine))
 	log.Println("Running server on port:", s.ListenerAddress)
 	http.ListenAndServe(":"+s.ListenerAddress, nil)
 }

@@ -14,32 +14,32 @@ import (
 )
 
 type Vaulter interface {
-	addEnginesToList(ctx context.Context, client *vault.Client) ([]string, error)
-	createEngines(ctx context.Context, client *vault.Client, secret *secret) (string, error)
-	getSecretEngines(ctx context.Context, client *vault.Client) map[string]interface{}
-	hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*secret, secretMap map[string]secretMap)
+	makeEngineSlice(ctx context.Context, client *vault.Client) ([]string, error)
+	createEngines(ctx context.Context, client *vault.Client, secret *Secret) (string, error)
+	GetSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{}
+	hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap)
 	InitVaultClient(token string, url string) (context.Context, *vault.Client, error)
 	writeSecret(ctx context.Context, client *vault.Client, path string, data map[string]interface{}) error
 }
 
-func (v *AcmeVault) addEnginesToList(ctx context.Context, client *vault.Client) ([]string, error) {
+func (v *AcmeVault) makeEngineSlice(ctx context.Context, client *vault.Client) ([]string, error) {
 	engineSlice := []string{}
-	for eng := range v.getSecretEngines(ctx, client) {
+	for eng := range v.GetSecretEngine(ctx, client) {
 		engineSlice = append(engineSlice, eng)
 	}
 	return engineSlice, nil
 }
 
-func (v *AcmeVault) createEngines(ctx context.Context, client *vault.Client, secret *secret) (string, error) {
-	_, err := client.System.MountsEnableSecretsEngine(ctx, secret.engine, schema.MountsEnableSecretsEngineRequest{Type: "kv-v2"})
+func (v *AcmeVault) createEngines(ctx context.Context, client *vault.Client, secret *Secret) (string, error) {
+	_, err := client.System.MountsEnableSecretsEngine(ctx, secret.Engine, schema.MountsEnableSecretsEngineRequest{Type: "kv-v2"})
 	if err != nil {
 		log.Warn().Err(err).Msg("err in createEngines")
 		return "", err
 	}
-	return "Processed: " + secret.engine, nil
+	return "Processed: " + secret.Engine, nil
 }
 
-func (v *AcmeVault) getSecretEngines(ctx context.Context, client *vault.Client) map[string]interface{} {
+func (v *AcmeVault) GetSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{} {
 	engs, err := client.System.MountsListSecretsEngines(ctx)
 	if err != nil {
 		log.Fatal().Err(err).Msg("")
@@ -67,36 +67,41 @@ func ReadSecret(ctx context.Context, c *vault.Client, path string, secret string
 	return data[secret].(string)
 }
 
-func createDataInVault(ctx context.Context, client *vault.Client, v Vaulter, s []*secret) error {
+func CreateDataInVault(ctx context.Context, client *vault.Client, v Vaulter, s []*Secret) error {
+	engines, err := v.makeEngineSlice(ctx, client)
+	if err != nil {
+		return err
+	}
+
 	for _, secret := range s {
-		engines, err := v.addEnginesToList(ctx, client)
-		if err != nil {
-			return err
-		}
-		if slices.Contains(engines, secret.engine+"/") {
-			for _, kv := range secret.keys {
-				path := fmt.Sprintf("%v/data/%v", secret.engine, kv.path)
-				if err := v.writeSecret(ctx, client, path, kv.data); err != nil {
-					log.Warn().Err(err)
-				} else {
-					log.Info().Msgf("Secrets in: %q written", path)
-				}
+		if !slices.Contains(engines, secret.Engine+"/") {
+			log.Warn().Msg("trying to create" + secret.Engine)
+			eng, err := v.createEngines(ctx, client, secret)
+			if err != nil {
+				log.Warn().Err(err)
 			}
-		} else {
-			log.Info().Msgf("Engine: %q does not exist.", secret.engine)
+			log.Info().Msg("created: " + eng)
+		}
+		for _, kv := range secret.Keys {
+			path := fmt.Sprintf("%v/data/%v", secret.Engine, kv.Path)
+			if err := v.writeSecret(ctx, client, path, kv.Data); err != nil {
+				log.Warn().Err(err)
+			} else {
+				log.Info().Msgf("Secrets in: %q written", path)
+			}
 		}
 	}
 	return nil
 }
 
-func (v *AcmeVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*secret, secretMap map[string]secretMap) {
+func (v *AcmeVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) {
 	for _, secret := range s {
-		for _, kv := range secret.keys {
-			for key := range kv.data {
+		for _, kv := range secret.Keys {
+			for key := range kv.Data {
 				sm := secretMap[key]
 				if sm.path != "" {
 					value := ReadSecret(ctx, c, sm.path, sm.secret)
-					kv.data[key] = value
+					kv.Data[key] = value
 				}
 			}
 		}
@@ -123,33 +128,13 @@ func (s *AcmeVault) InitVaultClient(token string, url string) (context.Context, 
 	return ctx, client, nil
 }
 
-func RunVault(v Vaulter, c VaultConfig) (string, error) {
-	ctx, client, err := v.InitVaultClient(c.Token, c.URL)
-
-	if err != nil {
-		return "", err
-	}
-
-	var s []*secret
-	if c.Legacy {
-		s = initLegacySecrets()
-	} else {
-		s = initNewSecrets()
-	}
-
+func InitVault(ctx context.Context, client *vault.Client, v Vaulter, s []*Secret, c VaultConfig) (string, error) {
 	if !c.Legacy && c.Copy {
 		sm := initSecretMap()
 		v.hydrateNewSecretsStruct(ctx, client, s, sm)
 	}
 
-	for _, secret := range s {
-		e, err := v.createEngines(ctx, client, secret)
-		if err != nil {
-			return "", err
-		}
-		log.Info().Msg(e)
-	}
-	err = createDataInVault(ctx, client, v, s)
+	err := CreateDataInVault(ctx, client, v, s)
 	if err != nil {
 		return "", err
 	}

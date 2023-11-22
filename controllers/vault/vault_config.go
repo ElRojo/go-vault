@@ -4,15 +4,15 @@ import (
 	"go-vault/internal/utility"
 )
 
-func initNewSecrets() []*secret {
+func InitNewSecrets() []*Secret {
 	var key string = utility.GenerateUUID()
 
-	var newSecrets = []*secret{
+	var newSecrets = []*Secret{
 		{
-			engine: "my-folder",
-			keys: []kv{
+			Engine: "my-folder",
+			Keys: []KV{
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"MDM_API_KEY":            "",
 						"RINGCENTRAL_SECRET":     "",
 						"CLL_API_KEY":            "",
@@ -39,7 +39,7 @@ func initNewSecrets() []*secret {
 						"CHAMP_014":              "",
 						"DRIC_FL_STRING":         "",
 					},
-					path: "sec-engine",
+					Path: "sec-engine",
 				},
 			},
 		},
@@ -47,145 +47,145 @@ func initNewSecrets() []*secret {
 	return newSecrets
 }
 
-func initLegacySecrets() []*secret {
+func InitLegacySecrets() []*Secret {
 
 	var key = utility.GenerateUUID()
-	var legacySecrets = []*secret{
+	var legacySecrets = []*Secret{
 		{
-			engine: "test-engine",
-			keys: []kv{
+			Engine: "test-engine",
+			Keys: []KV{
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"username_for_oal": "",
 						"secret_key":       key,
 					},
-					path: "colpuls",
+					Path: "colpuls",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"apple_dev_pw": "",
 						"aik_key":      key,
 					},
-					path: "apple/developer",
+					Path: "apple/developer",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"lorem_key": key,
 					},
-					path: "IPSU",
+					Path: "IPSU",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"cll_api_key": "",
 						"mscott_key":  "",
 					},
-					path: "office",
+					Path: "office",
 				},
 			},
 		},
 		{
-			engine: "test-engine-1",
-			keys: []kv{
+			Engine: "test-engine-1",
+			Keys: []KV{
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"var_sec": "",
 					},
-					path: "vars",
+					Path: "vars",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"private_key": "",
 					},
-					path: "IPSU",
+					Path: "IPSU",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"ham_sec_api_key": "",
 					},
-					path: "local/accts",
+					Path: "local/accts",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"api_key": "",
 					},
-					path: "jil",
+					Path: "jil",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"path": "",
 					},
-					path: "lwe",
+					Path: "lwe",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"api_key": "",
 					},
-					path: "qet",
+					Path: "qet",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"api_key": "",
 					},
-					path: "pwo",
+					Path: "pwo",
 				},
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"api_key": "",
 					},
-					path: "office",
+					Path: "office",
 				},
 			},
 		},
 		{
-			engine: "test-engine-2",
-			keys: []kv{
+			Engine: "test-engine-2",
+			Keys: []KV{
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"conn_string": "",
 						"tal_url":     "",
 					},
-					path: "test-engine-2",
+					Path: "test-engine-2",
 				},
 			},
 		},
 		{
-			engine: "postgres",
-			keys: []kv{
+			Engine: "postgres",
+			Keys: []KV{
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"conn_string": "",
 						"url":         "",
 					},
-					path: "vars",
+					Path: "vars",
 				},
 			},
 		},
 		{
-			engine: "prc_gps",
-			keys: []kv{
+			Engine: "prc_gps",
+			Keys: []KV{
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"gps_key": "",
 					},
-					path: "office",
+					Path: "office",
 				},
 			},
 		},
 		{
-			engine: "aws",
-			keys: []kv{
-				{data: map[string]interface{}{
+			Engine: "aws",
+			Keys: []KV{
+				{Data: map[string]interface{}{
 					"aws-creds": "",
 				},
-					path: "creds",
+					Path: "creds",
 				},
 			},
 		},
 		{
-			engine: "supersecrets",
-			keys: []kv{
+			Engine: "supersecrets",
+			Keys: []KV{
 				{
-					data: map[string]interface{}{
+					Data: map[string]interface{}{
 						"MSSQL_CONN_STRING":  "",
 						"jamf_key":           utility.GeneratePassword(35),
 						"ringcentral_secret": "",
@@ -196,7 +196,7 @@ func initLegacySecrets() []*secret {
 						"ch_014_key":         "",
 						"drr-fl-string":      utility.GeneratePassword(25),
 					},
-					path: "supersecrets",
+					Path: "supersecrets",
 				},
 			},
 		},
