@@ -195,7 +195,7 @@ type Secret struct {
 | property         | type   | value example            | required | purpose                                          |
 | ---------------- | ------ | ------------------------ | -------- | ------------------------------------------------ |
 | `authentication` | object | `vaultToken`, `vaultUrl` | Y        | Authenticate with vault.                         |
-| `engine`         | string | `firebase`               | Y        | The KV-V2 engine from which to read a value from |
+| `engine`         | string | `firebase`               | Y        | The KV-V2 engine from which to read a value      |
 | `path`           | string | `stripe/dev`             | Y        | Path to the secret in the aformentioned engine   |
 | `key`            | string | `private_api_key`        | Y        | The key for which to return a value              |
 
