@@ -50,7 +50,7 @@ type VaultSecret struct {
 
 type VaultRead struct {
 	Auth   VaultAuth `json:"authentication" validate:"required"`
-	Engine string    `json:"engine"`
+	Engine string    `json:"engine" validate:"required"`
 	Path   string    `json:"path" validate:"required"`
 	Key    string    `json:"key" validate:"required"`
 }

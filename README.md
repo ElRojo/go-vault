@@ -20,7 +20,7 @@ This was necessary due to a lack of access to Terraform.
 
 Before you begin, make sure you have [Docker](https://www.docker.com/get-started/) installed and running.
 
-### Demoing the Application
+## Demoing the Application
 
 1. Clone the repository and then `cd` into the project directory.
 
@@ -36,14 +36,14 @@ docker-compose up
 
 5. Send a POST request to [http://localhost:4269/vault](http://localhost:4269/vault) with the following JSON object to test. See the [Request Documentation](#request-documentation) for finer details.
 
-```JSON
-{
-  "copyLegacy": false,
-  "useLegacy": false,
-  "vaultToken": "dev-only-token",
-  "vaultUrl": "http://vault:8200"
-}
-```
+ ```JSON
+ {
+ "copyLegacy": false,
+ "useLegacy": false,
+ "vaultToken": "dev-only-token",
+ "vaultUrl": "http://vault:8200"
+ }
+ ```
 
 6. Refresh your browser to view the updated secrets engine
 
@@ -179,6 +179,53 @@ type Secret struct {
     }
   ]
   }
+```
+
+## GET
+
+### Vault Read Object
+
+| property         | type   | value example            | required | purpose                                          |
+| ---------------- | ------ | ------------------------ | -------- | ------------------------------------------------ |
+| `authentication` | object | `vaultToken`, `vaultUrl` | Y        | Authenticate with vault.                         |
+| `engine`         | string | `firebase`               | Y        | The KV-V2 engine from which to read a value from |
+| `path`           | string | `stripe/dev`             | Y        | Path to the secret in the aformentioned engine   |
+| `key`            | string | `private_api_key`        | Y        | The key for which to return a value              |
+
+### Vault Read Struct
+
+```go
+type VaultRead struct {
+ Auth   VaultAuth `json:"authentication" validate:"required"`
+ Engine string    `json:"engine" validate:"required"`
+ Path   string    `json:"path" validate:"required"`
+ Key    string    `json:"key" validate:"required"`
+}
+
+```
+
+### Example Vault Read Object
+
+```json
+{
+    "authentication": {
+    "vaultToken": "dev-only-token",
+    "vaultUrl": "http://vault:8200"
+    },
+    "engine": "myfolder",
+    "path": "stripe/dev",
+    "key": "private_key"
+  }
+```
+
+### Example Response
+
+```json
+{
+  "Success": {
+    "private_key": "secretHere"
+  }
+}
 ```
 
 </details>
