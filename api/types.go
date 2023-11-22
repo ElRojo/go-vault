@@ -17,6 +17,10 @@ type APIError struct {
 	Error string
 }
 
+type APIResponse struct {
+	Success any
+}
+
 // vault
 type VaultAuth struct {
 	URL        string `json:"vaultUrl" validate:"required"`
@@ -42,4 +46,11 @@ type Secret struct {
 type VaultSecret struct {
 	Auth   VaultAuth `json:"authentication" validate:"required"`
 	Secret []Secret  `json:"secret"`
+}
+
+type VaultRead struct {
+	Auth   VaultAuth `json:"authentication" validate:"required"`
+	Engine string    `json:"engine"`
+	Path   string    `json:"path" validate:"required"`
+	Key    string    `json:"key" validate:"required"`
 }

@@ -17,7 +17,7 @@ type Vaulter interface {
 	makeEngineSlice(ctx context.Context, client *vault.Client) ([]string, error)
 	createEngines(ctx context.Context, client *vault.Client, secret *Secret) (string, error)
 	GetSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{}
-	hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap)
+	hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) error
 	InitVaultClient(token string, url string) (context.Context, *vault.Client, error)
 	writeSecret(ctx context.Context, client *vault.Client, path string, data map[string]interface{}) error
 }
@@ -55,16 +55,16 @@ func (v *AcmeVault) writeSecret(ctx context.Context, client *vault.Client, path 
 	return nil
 }
 
-func ReadSecret(ctx context.Context, c *vault.Client, path string, secret string) string {
+func ReadSecret(ctx context.Context, c *vault.Client, path string, secret string) (string, error) {
 	response, err := c.Read(ctx, path)
 	if err != nil {
-		return "error reading secret"
+		return "", err
 	}
 	data, ok := response.Data["data"].(map[string]interface{})
 	if !ok {
-		return fmt.Sprintf("response data for %s secret not ok", secret)
+		return "", fmt.Errorf("response data for %s secret not ok", secret)
 	}
-	return data[secret].(string)
+	return data[secret].(string), nil
 }
 
 func CreateDataInVault(ctx context.Context, client *vault.Client, v Vaulter, s []*Secret) error {
@@ -94,18 +94,22 @@ func CreateDataInVault(ctx context.Context, client *vault.Client, v Vaulter, s [
 	return nil
 }
 
-func (v *AcmeVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) {
+func (v *AcmeVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) error {
 	for _, secret := range s {
 		for _, kv := range secret.Keys {
 			for key := range kv.Data {
 				sm := secretMap[key]
 				if sm.path != "" {
-					value := ReadSecret(ctx, c, sm.path, sm.secret)
+					value, err := ReadSecret(ctx, c, sm.path, sm.secret)
+					if err != nil {
+						return err
+					}
 					kv.Data[key] = value
 				}
 			}
 		}
 	}
+	return nil
 }
 
 func (s *AcmeVault) InitVaultClient(token string, url string) (context.Context, *vault.Client, error) {

@@ -73,7 +73,7 @@ func (v *mockVault) InitVaultClient(token string, url string) (context.Context, 
 	return ctx, client, nil
 }
 
-func (v *mockVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) {
+func (v *mockVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) error {
 	for _, secret := range s {
 		for _, kv := range secret.Keys {
 			for key := range kv.Data {
@@ -87,6 +87,7 @@ func (v *mockVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client
 			}
 		}
 	}
+	return nil
 }
 
 func TestVaultLegacy(t *testing.T) {

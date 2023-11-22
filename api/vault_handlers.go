@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"go-vault/controllers/vault"
 	"go-vault/internal/utility"
 	"net/http"
@@ -31,6 +32,8 @@ func (s *APIServer) handleSecret(w http.ResponseWriter, r *http.Request) error {
 	switch r.Method {
 	case "POST":
 		return s.handleCreateSecret(w, r)
+	case "GET":
+		return s.handleGetSecret(w, r)
 	}
 	return WriteJSON(w, http.StatusMethodNotAllowed, APIError{Error: r.Method + " not allowed"})
 }
@@ -52,55 +55,83 @@ func (s *APIServer) handleSecret(w http.ResponseWriter, r *http.Request) error {
 
 func (s *APIServer) handleCreateSecret(w http.ResponseWriter, r *http.Request) error {
 	var (
-		vaultReq      = &VaultSecret{}
+		req           = &VaultSecret{}
 		vaultInstance = &vault.AcmeVault{}
 	)
-	if err := json.NewDecoder(r.Body).Decode(&vaultReq); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return WriteJSON(w, http.StatusBadRequest, APIError{Error: "invalid JSON format"})
 	}
 
-	if err := utility.ValidateRequestFields(vaultReq); err != nil {
+	if err := utility.ValidateRequestFields(req); err != nil {
 		return WriteJSON(w, http.StatusBadRequest, APIError{Error: err.Error()})
 	}
 
-	ctx, client, err := vaultInstance.InitVaultClient(vaultReq.Auth.VaultToken, vaultReq.Auth.URL)
+	ctx, client, err := vaultInstance.InitVaultClient(req.Auth.VaultToken, req.Auth.URL)
 	if err != nil {
 		return err
 	}
-	secrets, err := convertSecret(vaultReq)
+	secrets, err := convertSecret(req)
 	if err != nil {
 		return err
 	}
 	if err := vault.CreateDataInVault(ctx, client, vaultInstance, secrets); err != nil {
 		return err
 	}
-	return WriteJSON(w, http.StatusOK, "ok")
+	return WriteJSON(w, http.StatusOK, req)
+}
+
+func (s *APIServer) handleGetSecret(w http.ResponseWriter, r *http.Request) error {
+	var (
+		req           = &VaultRead{}
+		vaultInstance = &vault.AcmeVault{}
+	)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return WriteJSON(w, http.StatusBadRequest, APIError{Error: "invalid JSON format"})
+	}
+
+	if err := utility.ValidateRequestFields(req); err != nil {
+		return WriteJSON(w, http.StatusBadRequest, APIError{Error: err.Error()})
+	}
+
+	ctx, client, err := vaultInstance.InitVaultClient(req.Auth.VaultToken, req.Auth.URL)
+	if err != nil {
+		return err
+	}
+
+	var path = fmt.Sprintf("%v/data/%v", req.Engine, req.Path)
+
+	secret, err := vault.ReadSecret(ctx, client, path, req.Key)
+	if err != nil {
+		return err
+	}
+
+	return WriteJSON(w, http.StatusOK, APIResponse{Success: map[string]string{req.Key: secret}})
 }
 
 func (s *APIServer) handleInitVault(w http.ResponseWriter, r *http.Request) error {
 	var (
-		vaultReq      = &VaultRequest{}
+		req           = &VaultRequest{}
 		vaultInstance = &vault.AcmeVault{}
 	)
 
-	if err := json.NewDecoder(r.Body).Decode(&vaultReq); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return WriteJSON(w, http.StatusBadRequest, APIError{Error: "invalid JSON format"})
 	}
 
-	if err := utility.ValidateRequestFields(vaultReq); err != nil {
+	if err := utility.ValidateRequestFields(req); err != nil {
 		return WriteJSON(w, http.StatusBadRequest, APIError{Error: err.Error()})
 	}
 
-	var secrets = initSecrets(*vaultReq.UseLegacy)
+	var secrets = initSecrets(*req.UseLegacy)
 
-	ctx, client, err := vaultInstance.InitVaultClient(vaultReq.Auth.VaultToken, vaultReq.Auth.URL)
+	ctx, client, err := vaultInstance.InitVaultClient(req.Auth.VaultToken, req.Auth.URL)
 	if err != nil {
 		return err
 	}
 
 	v, err := vault.InitVault(ctx, client, vaultInstance, secrets, vault.VaultConfig{
-		Copy:   *vaultReq.CopyLegacy,
-		Legacy: *vaultReq.UseLegacy,
+		Copy:   *req.CopyLegacy,
+		Legacy: *req.UseLegacy,
 	})
 	if err != nil {
 		return err
