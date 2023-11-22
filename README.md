@@ -1,7 +1,10 @@
 # go-vault
 
 - [Quickstart](#quickstart)
-- [config.go](#config)
+- [API Documentation](#api-documentation)
+  - [Authentication](#authentication)
+  - [Vault Endpoint](#vault-endpoint)
+  - [Vault Secret Endpoint](#vaultsecret-endpoint)
 - [vault_config.go](#vault-config)
   - [secretsMap](#secrets-map)
 - [pwgen.go](#pwgen)
@@ -16,11 +19,11 @@ I utilized the [vault-client-go](https://pkg.go.dev/github.com/hashicorp/vault-c
 
 This was necessary due to a lack of access to Terraform.
 
-# Quickstart
+## Quickstart
 
 Before you begin, make sure you have [Docker](https://www.docker.com/get-started/) installed and running.
 
-## Demoing the Application
+### Demoing the Application
 
 1. Clone the repository and then `cd` into the project directory.
 
@@ -37,19 +40,19 @@ docker-compose up
 5. Send a POST request to [http://localhost:4269/vault](http://localhost:4269/vault) with the following JSON object to test. See the [Request Documentation](#request-documentation) for finer details.
 
  ```JSON
- {
- "copyLegacy": false,
- "useLegacy": false,
- "vaultToken": "dev-only-token",
- "vaultUrl": "http://vault:8200"
- }
+{
+  "copyLegacy": false,
+  "useLegacy": false,
+  "vaultToken": "dev-only-token",
+  "vaultUrl": "http://vault:8200"
+}
  ```
 
 6. Refresh your browser to view the updated secrets engine
 
 7. Exit and kill the containers when done with `CTRL+C`
 
-## Request Documentation
+## API Documentation
 
 ### Authentication
 
@@ -78,6 +81,8 @@ type VaultAuth struct {
  ...
 }
 ```
+
+### Vault Endpoint
 
 <details>
  <summary><b> http://localhost:4269/vault </b></summary>
@@ -108,17 +113,19 @@ type VaultRequest struct {
 
 ```json
 {
- "authentication": {
+  "authentication": {
     "vaultToken": "dev-only-token",
     "vaultUrl": "http://vault:8200"
- },
+  },
   "useLegacy": true,
-  "copyLegacy": true,
-
+  "copyLegacy": true
 }
+
 ```
 
 </details>
+
+### Vault/Secret Endpoint
 
 <details>
  <summary><b> http://localhost:4269/vault/secret </b></summary>
@@ -160,25 +167,25 @@ type Secret struct {
 
 ```json
 {
-    "authentication": {
+  "authentication": {
     "vaultToken": "dev-only-token",
     "vaultUrl": "http://vault:8200"
-    },
-    "secret": [
-      {
+  },
+  "secret": [
+    {
       "engine": "apiengine",
       "kv": [
         {
-        "path": "api-test",
-        "data": {
-          "api_key": "myApiKey",
-          "test":"another key"
+          "path": "api-test",
+          "data": {
+            "api_key": "myApiKey",
+            "test": "another key"
+          }
         }
-      }
-    ]
+      ]
     }
   ]
-  }
+}
 ```
 
 ## GET
@@ -208,14 +215,14 @@ type VaultRead struct {
 
 ```json
 {
-    "authentication": {
+  "authentication": {
     "vaultToken": "dev-only-token",
     "vaultUrl": "http://vault:8200"
-    },
-    "engine": "myfolder",
-    "path": "stripe/dev",
-    "key": "private_key"
-  }
+  },
+  "engine": "myfolder",
+  "path": "stripe/dev",
+  "key": "private_key"
+}
 ```
 
 ### Example Response
