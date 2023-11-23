@@ -16,15 +16,14 @@ import (
 type Vaulter interface {
 	makeEngineSlice(ctx context.Context, client *vault.Client) ([]string, error)
 	createEngines(ctx context.Context, client *vault.Client, secret *Secret) (string, error)
-	GetSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{}
+	getSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{}
 	hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) error
-	InitVaultClient(token string, url string) (context.Context, *vault.Client, error)
 	writeSecret(ctx context.Context, client *vault.Client, path string, data map[string]interface{}) error
 }
 
 func (v *AcmeVault) makeEngineSlice(ctx context.Context, client *vault.Client) ([]string, error) {
 	engineSlice := []string{}
-	for eng := range v.GetSecretEngine(ctx, client) {
+	for eng := range v.getSecretEngine(ctx, client) {
 		engineSlice = append(engineSlice, eng)
 	}
 	return engineSlice, nil
@@ -39,7 +38,7 @@ func (v *AcmeVault) createEngines(ctx context.Context, client *vault.Client, sec
 	return "Processed: " + secret.Engine, nil
 }
 
-func (v *AcmeVault) GetSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{} {
+func (v *AcmeVault) getSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{} {
 	engs, err := client.System.MountsListSecretsEngines(ctx)
 	if err != nil {
 		log.Fatal().Err(err).Msg("")
@@ -112,7 +111,7 @@ func (v *AcmeVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client
 	return nil
 }
 
-func (s *AcmeVault) InitVaultClient(token string, url string) (context.Context, *vault.Client, error) {
+func InitVaultClient(token string, url string) (context.Context, *vault.Client, error) {
 	var ctx = context.Background()
 
 	client, err := vault.New(

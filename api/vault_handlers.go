@@ -66,7 +66,7 @@ func (s *APIServer) handleCreateSecret(w http.ResponseWriter, r *http.Request) e
 		return WriteJSON(w, http.StatusBadRequest, APIError{Error: err.Error()})
 	}
 
-	ctx, client, err := vaultInstance.InitVaultClient(req.Auth.VaultToken, req.Auth.URL)
+	ctx, client, err := vault.InitVaultClient(req.Auth.VaultToken, req.Auth.URL)
 	if err != nil {
 		return err
 	}
@@ -81,10 +81,8 @@ func (s *APIServer) handleCreateSecret(w http.ResponseWriter, r *http.Request) e
 }
 
 func (s *APIServer) handleGetSecret(w http.ResponseWriter, r *http.Request) error {
-	var (
-		req           = &VaultRead{}
-		vaultInstance = &vault.AcmeVault{}
-	)
+	var req = &VaultRead{}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return WriteJSON(w, http.StatusBadRequest, APIError{Error: "invalid JSON format"})
 	}
@@ -93,7 +91,7 @@ func (s *APIServer) handleGetSecret(w http.ResponseWriter, r *http.Request) erro
 		return WriteJSON(w, http.StatusBadRequest, APIError{Error: err.Error()})
 	}
 
-	ctx, client, err := vaultInstance.InitVaultClient(req.Auth.VaultToken, req.Auth.URL)
+	ctx, client, err := vault.InitVaultClient(req.Auth.VaultToken, req.Auth.URL)
 	if err != nil {
 		return err
 	}
@@ -124,7 +122,7 @@ func (s *APIServer) handleInitVault(w http.ResponseWriter, r *http.Request) erro
 
 	var secrets = initSecrets(*req.UseLegacy)
 
-	ctx, client, err := vaultInstance.InitVaultClient(req.Auth.VaultToken, req.Auth.URL)
+	ctx, client, err := vault.InitVaultClient(req.Auth.VaultToken, req.Auth.URL)
 	if err != nil {
 		return err
 	}

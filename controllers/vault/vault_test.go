@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/vault-client-go"
 	"github.com/rs/zerolog/log"
@@ -32,7 +31,7 @@ var resp = responseMock[engineDataMock]{
 
 func (v *mockVault) makeEngineSlice(ctx context.Context, client *vault.Client) ([]string, error) {
 	engineSlice := []string{}
-	for eng := range v.GetSecretEngine(ctx, client) {
+	for eng := range v.getSecretEngine(ctx, client) {
 		engineSlice = append(engineSlice, eng)
 	}
 	return engineSlice, nil
@@ -42,7 +41,7 @@ func (v *mockVault) createEngines(ctx context.Context, client *vault.Client, sec
 	return "Processed: " + secret.Engine, nil
 }
 
-func (v *mockVault) GetSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{} {
+func (v *mockVault) getSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{} {
 	return resp.data.engine
 }
 
@@ -51,26 +50,6 @@ func (v *mockVault) writeSecret(ctx context.Context, client *vault.Client, path 
 		fmt.Printf("Writing: %v:%v \n", i, v)
 	}
 	return nil
-}
-
-func (v *mockVault) InitVaultClient(token string, url string) (context.Context, *vault.Client, error) {
-	var ctx = context.Background()
-
-	client, err := vault.New(
-		vault.WithAddress(url),
-		vault.WithRequestTimeout(10*time.Second),
-	)
-	if err != nil {
-		log.Fatal().Err(err)
-		return nil, nil, err
-	}
-	err = client.SetToken(token)
-	if err != nil {
-		log.Fatal().Err(err)
-		return nil, nil, err
-	}
-
-	return ctx, client, nil
 }
 
 func (v *mockVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) error {
@@ -99,7 +78,7 @@ func TestVaultLegacy(t *testing.T) {
 		URL:    "",
 	}
 	secrets := InitLegacySecrets()
-	ctx, client, err := v.InitVaultClient(c.Token, c.URL)
+	ctx, client, err := InitVaultClient(c.Token, c.URL)
 	if err != nil {
 		return
 	}
@@ -119,7 +98,7 @@ func TestVaultNew(t *testing.T) {
 		URL:    "",
 	}
 	secrets := InitNewSecrets()
-	ctx, client, err := v.InitVaultClient(c.Token, c.URL)
+	ctx, client, err := InitVaultClient(c.Token, c.URL)
 	if err != nil {
 		return
 	}
@@ -139,7 +118,7 @@ func TestVaultNewWithCopy(t *testing.T) {
 		URL:    "",
 	}
 	secrets := InitNewSecrets()
-	ctx, client, err := v.InitVaultClient(c.Token, c.URL)
+	ctx, client, err := InitVaultClient(c.Token, c.URL)
 	if err != nil {
 		log.Err(err)
 	}

@@ -41,10 +41,12 @@ docker-compose up
 
  ```JSON
 {
+  "authentication": {
+    "vaultToken": "dev-only-token",
+    "vaultUrl": "http://vault:8200"
+ },
   "copyLegacy": false,
   "useLegacy": false,
-  "vaultToken": "dev-only-token",
-  "vaultUrl": "http://vault:8200"
 }
  ```
 
