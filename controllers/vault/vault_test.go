@@ -11,21 +11,16 @@ import (
 )
 
 type engineDataMock struct {
-	engine map[string]interface{}
-}
-type responseMock[T any] struct {
-	data T
+	data map[string]interface{}
 }
 type mockVault struct{}
 
-var resp = responseMock[engineDataMock]{
-	data: engineDataMock{
-		engine: map[string]interface{}{
-			"test-engine/":   "",
-			"test-engine-1/": "",
-			"test-engine-2/": "",
-			"my-folder/":     "",
-		},
+var resp = engineDataMock{
+	data: map[string]interface{}{
+		"test-engine/":   "",
+		"test-engine-1/": "",
+		"test-engine-2/": "",
+		"my-folder/":     "",
 	},
 }
 
@@ -42,7 +37,7 @@ func (v *mockVault) createEngines(ctx context.Context, client *vault.Client, sec
 }
 
 func (v *mockVault) getSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{} {
-	return resp.data.engine
+	return resp.data
 }
 
 func (v *mockVault) writeSecret(ctx context.Context, client *vault.Client, path string, data map[string]interface{}) error {
