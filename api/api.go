@@ -14,7 +14,7 @@ func makeHTTPHandlerFunc(f apiFunc) http.HandlerFunc {
 	}
 }
 
-func enableCors(w http.ResponseWriter, s string) {
+func setCORS(w http.ResponseWriter, s string) {
 	w.Header().Set("Access-Control-Allow-Origin", s)
 }
 
@@ -25,9 +25,7 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 }
 
 func (s *APIServer) Run() {
-	http.Handle("/vault", makeHTTPHandlerFunc(s.handleVault))
-    http.Handle("/vault/secret", makeHTTPHandlerFunc(s.handleSecret))
-    // http.Handle("/vault/engine", makeHTTPHandlerFunc(s.handleEngine))
+	http.Handle("/vault/", makeHTTPHandlerFunc(s.handleVault))
 	log.Println("Running server on port:", s.ListenerAddress)
 	http.ListenAndServe(":"+s.ListenerAddress, nil)
 }

@@ -13,7 +13,6 @@ type vaultRequestTest struct {
 	CopyLegacy *bool  `json:"copyLegacy" validate:"required"`
 	URL        string `json:"vaultUrl" validate:"required"`
 	UseLegacy  *bool  `json:"useLegacy" validate:"required"`
-	VaultToken string `json:"vaultToken" validate:"required"`
 }
 
 func TestValidateRequestFields(t *testing.T) {
@@ -21,7 +20,6 @@ func TestValidateRequestFields(t *testing.T) {
 	req := `{
 		"useLegacy":  true,
 		"copyLegacy": true,
-		"vaultToken": "dev-only-token",
 		"vaultUrl":   "http://vault:8200"
 	}`
 	if err := json.NewDecoder(strings.NewReader(req)).Decode(&testVaultReq); err != nil {

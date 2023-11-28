@@ -10,7 +10,10 @@ func InitNewSecrets() []*Secret {
 	var newSecrets = []*Secret{
 		{
 			Engine: "my-folder",
-			Keys: []KV{
+			KV: []struct {
+				Data map[string]interface{}
+				Path string
+			}{
 				{
 					Data: map[string]interface{}{
 						"MDM_API_KEY":            "",
@@ -53,7 +56,10 @@ func InitLegacySecrets() []*Secret {
 	var legacySecrets = []*Secret{
 		{
 			Engine: "test-engine",
-			Keys: []KV{
+			KV: []struct {
+				Data map[string]interface{}
+				Path string
+			}{
 				{
 					Data: map[string]interface{}{
 						"username_for_oal": "",
@@ -85,7 +91,10 @@ func InitLegacySecrets() []*Secret {
 		},
 		{
 			Engine: "test-engine-1",
-			Keys: []KV{
+			KV: []struct {
+				Data map[string]interface{}
+				Path string
+			}{
 				{
 					Data: map[string]interface{}{
 						"var_sec": "",
@@ -138,7 +147,10 @@ func InitLegacySecrets() []*Secret {
 		},
 		{
 			Engine: "test-engine-2",
-			Keys: []KV{
+			KV: []struct {
+				Data map[string]interface{}
+				Path string
+			}{
 				{
 					Data: map[string]interface{}{
 						"conn_string": "",
@@ -150,7 +162,10 @@ func InitLegacySecrets() []*Secret {
 		},
 		{
 			Engine: "postgres",
-			Keys: []KV{
+			KV: []struct {
+				Data map[string]interface{}
+				Path string
+			}{
 				{
 					Data: map[string]interface{}{
 						"conn_string": "",
@@ -162,7 +177,10 @@ func InitLegacySecrets() []*Secret {
 		},
 		{
 			Engine: "prc_gps",
-			Keys: []KV{
+			KV: []struct {
+				Data map[string]interface{}
+				Path string
+			}{
 				{
 					Data: map[string]interface{}{
 						"gps_key": "",
@@ -173,7 +191,10 @@ func InitLegacySecrets() []*Secret {
 		},
 		{
 			Engine: "aws",
-			Keys: []KV{
+			KV: []struct {
+				Data map[string]interface{}
+				Path string
+			}{
 				{Data: map[string]interface{}{
 					"aws-creds": "",
 				},
@@ -183,7 +204,10 @@ func InitLegacySecrets() []*Secret {
 		},
 		{
 			Engine: "supersecrets",
-			Keys: []KV{
+			KV: []struct {
+				Data map[string]interface{}
+				Path string
+			}{
 				{
 					Data: map[string]interface{}{
 						"MSSQL_CONN_STRING":  "",

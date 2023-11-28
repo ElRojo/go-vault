@@ -14,12 +14,10 @@ type VaultConfig struct {
 	URL    string
 }
 
-type KV struct {
-	Data map[string]interface{}
-	Path string
-}
-
 type Secret struct {
 	Engine string
-	Keys   []KV
+	KV     []struct {
+		Data map[string]interface{}
+		Path string
+	}
 }

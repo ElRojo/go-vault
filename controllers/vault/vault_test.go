@@ -24,20 +24,16 @@ var resp = engineDataMock{
 	},
 }
 
-func (v *mockVault) makeEngineSlice(ctx context.Context, client *vault.Client) ([]string, error) {
-	engineSlice := []string{}
-	for eng := range v.getSecretEngine(ctx, client) {
-		engineSlice = append(engineSlice, eng)
-	}
-	return engineSlice, nil
-}
-
 func (v *mockVault) createEngines(ctx context.Context, client *vault.Client, secret *Secret) (string, error) {
 	return "Processed: " + secret.Engine, nil
 }
 
-func (v *mockVault) getSecretEngine(ctx context.Context, client *vault.Client) map[string]interface{} {
-	return resp.data
+func (v *mockVault) getSecretEngine(ctx context.Context, client *vault.Client) ([]string, error) {
+	engineSlice := []string{}
+	for eng := range resp.data {
+		engineSlice = append(engineSlice, eng)
+	}
+	return engineSlice, nil
 }
 
 func (v *mockVault) writeSecret(ctx context.Context, client *vault.Client, path string, data map[string]interface{}) error {
@@ -49,7 +45,7 @@ func (v *mockVault) writeSecret(ctx context.Context, client *vault.Client, path 
 
 func (v *mockVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) error {
 	for _, secret := range s {
-		for _, kv := range secret.Keys {
+		for _, kv := range secret.KV {
 			for key := range kv.Data {
 				if kv.Data[key] == "" {
 					sm := secretMap[key]
