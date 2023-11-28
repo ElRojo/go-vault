@@ -17,8 +17,8 @@ type APIError struct {
 	Error string
 }
 
-type APIResponse struct {
-	Success any
+type APIResponse[T any] struct {
+	Success T
 }
 
 // vault

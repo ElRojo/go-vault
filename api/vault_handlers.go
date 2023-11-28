@@ -91,7 +91,7 @@ func (s *APIServer) handleGetSecret(w http.ResponseWriter, r *http.Request, ctx 
 		return err
 	}
 
-	return WriteJSON(w, http.StatusOK, APIResponse{Success: map[string]string{req.Key: secret}})
+	return WriteJSON(w, http.StatusOK, APIResponse[map[string]string]{Success: map[string]string{req.Key: secret}})
 }
 
 func (s *APIServer) handleInitVault(w http.ResponseWriter, r *http.Request, ctx context.Context, client *vc.Client) error {
@@ -131,7 +131,7 @@ func convertSecret(s *VaultSecret) ([]*vault.Secret, error) {
 	var secretSlice []*vault.Secret
 
 	for _, secret := range s.Secret {
-		newObj := &vault.Secret{
+		createdSecret := &vault.Secret{
 			Engine: secret.Engine,
 			KV: make([]struct {
 				Data map[string]interface{}
@@ -139,7 +139,7 @@ func convertSecret(s *VaultSecret) ([]*vault.Secret, error) {
 			}, len(secret.KV)),
 		}
 		for i, kv := range secret.KV {
-			newObj.KV[i] = struct {
+			createdSecret.KV[i] = struct {
 				Data map[string]interface{}
 				Path string
 			}{
@@ -147,7 +147,7 @@ func convertSecret(s *VaultSecret) ([]*vault.Secret, error) {
 				Path: kv.Path,
 			}
 		}
-		secretSlice = append(secretSlice, newObj)
+		secretSlice = append(secretSlice, createdSecret)
 	}
 	return secretSlice, nil
 }
