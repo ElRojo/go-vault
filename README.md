@@ -40,11 +40,11 @@ docker-compose up
 5. Send a POST request to [http://localhost:4269/vault](http://localhost:4269/vault) with the following JSON object to test. See the [Request Documentation](#request-documentation) for finer details.
 
  ```JSON
+ // Headers
+ "Api-Key": "dev-only-token"
+ "Vault-Url": "http://vault:8200"
+
 {
-  "authentication": {
-    "vaultToken": "dev-only-token",
-    "vaultUrl": "http://vault:8200"
- },
   "copyLegacy": false,
   "useLegacy": false,
 }
@@ -58,31 +58,12 @@ docker-compose up
 
 ### Authentication
 
-POST requests require an `authentication` object as the parent.
+Requests require two headers for authenticating.
 
-| property     | type   | value example                   | required | purpose                                      |
-| ------------ | ------ | ------------------------------- | -------- | -------------------------------------------- |
-| `vaultUrl`   | string | `http://hashicorpVaultUrl:8200` | Y        | The URL of the HashiCorp Vault instance.     |
-| `vaultToken` | string | `dev-only-token`                | Y        | Token to auth with HashiCorp Vault instance. |
-
-```go
-type VaultAuth struct {
- URL        string `json:"vaultUrl" validate:"required"`
- VaultToken string `json:"vaultToken" validate:"required"`
-}
-```
-
-### Example Authentication Object
-
-```json
-{
- "authentication": {
-    "vaultToken": "dev-only-token",
-    "vaultUrl": "http://vault:8200"
- },
- ...
-}
-```
+| property    | type   | value example                   | required | purpose                                      |
+| ----------- | ------ | ------------------------------- | -------- | -------------------------------------------- |
+| `Vault-Url` | string | `http://hashicorpVaultUrl:8200` | Y        | The URL of the HashiCorp Vault instance.     |
+| `Api-Key`   | string | `dev-only-token`                | Y        | Token to auth with HashiCorp Vault instance. |
 
 ### Vault Endpoint
 
@@ -95,17 +76,15 @@ type VaultAuth struct {
 
 ### Vault Request Object
 
-| property         | type   | value example            | required | purpose                                                                                                                                   |
-| ---------------- | ------ | ------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `authentication` | object | `vaultToken`, `vaultUrl` | Y        | Authenticate with vault.                                                                                                                  |
-| `copyLegacy`     | bool   | `true` / `false`         | Y        | If set to `true` and `useLegacy` is set to `false`, this will copy legacy secrets architecture and place them into the flat architecture. |
-| `useLegacy`      | bool   | `true` / `false`         | Y        | If set to `true`, this builds secrets using the legacy architecture.                                                                      |
+| property     | type | value example    | required | purpose                                                                                                                                   |
+| ------------ | ---- | ---------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `copyLegacy` | bool | `true` / `false` | Y        | If set to `true` and `useLegacy` is set to `false`, this will copy legacy secrets architecture and place them into the flat architecture. |
+| `useLegacy`  | bool | `true` / `false` | Y        | If set to `true`, this builds secrets using the legacy architecture.                                                                      |
 
 ### Vault Request Struct
 
 ```go
 type VaultRequest struct {
- Auth       VaultAuth `json:"authentication validate:"required"`
  CopyLegacy bool      `json:"copyLegacy" validate:"required"`
  UseLegacy  bool      `json:"useLegacy" validate:"required"`
 }
@@ -115,10 +94,6 @@ type VaultRequest struct {
 
 ```json
 {
-  "authentication": {
-    "vaultToken": "dev-only-token",
-    "vaultUrl": "http://vault:8200"
-  },
   "useLegacy": true,
   "copyLegacy": true
 }
@@ -136,43 +111,35 @@ type VaultRequest struct {
 
 ### Vault Secret Object
 
-| property         | type                   | value example                                                    | required | purpose                                                                                                                                                                                                 |
-| ---------------- | ---------------------- | ---------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `authentication` | object                 | `vaultToken`, `vaultUrl`                                         | Y        | Authenticate with vault.                                                                                                                                                                                |
-| `secret`         | array of `Secret`      | `[{engine, kv:[{data, path}]}]`                                  | Y        | A secret is an array of Secrets which are containers holding engines (folders), paths inside the engine, and data (key/value pairs)                                                                     |
-| `engine`         | string                 | `firebase`                                                       | Y        | Engines are top-level folders. They also dictate the type of secret that will be held. In this application, all secrets are K/V pairs.                                                                  |
-| `kv`             | array of `KV`          | `[{data: map[string]interface{}, path: ""}]`                     | Y        | KV stands for Key Value. This is a collection of Key/Value pairs that can be inserted into the parent-engine. As Vault can only update all or none of an engine, these are tighlyt coupled.             |
-| `data`           | map[string]interface{} | `{"apiKey" : "12345678", "anotherKey" : "823oi3-sjj39848-vvdse" }` | Y        | Data is ingested as an object of `string : string`. All keys and values must be entered in quotations and separated by commas.                                                                          |
-| `path`           | string                 | `"userKeys/dev"`                                                   | Y        | The path is where the secret will be contained inside the engine provided. Paths must not start or end with a forward slash ("/"). The provided example would resolve to `ENGINENAME/data/userKeys/dev` |
+| property | type                   | value example                                                      | required | purpose                                                                                                                                                                                                 |
+| -------- | ---------------------- | ------------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `secret` | array of `Secret`      | `[{engine, kv:[{data, path}]}]`                                    | Y        | A secret is an array of Secrets which are containers holding engines (folders), paths inside the engine, and data (key/value pairs)                                                                     |
+| `engine` | string                 | `firebase`                                                         | Y        | Engines are top-level folders. They also dictate the type of secret that will be held. In this application, all secrets are K/V pairs.                                                                  |
+| `kv`     | array of `KV`          | `[{data: map[string]interface{}, path: ""}]`                       | Y        | KV stands for Key Value. This is a collection of Key/Value pairs that can be inserted into the parent-engine. As Vault can only update all or none of an engine, these are tighlyt coupled.             |
+| `data`   | map[string]interface{} | `{"apiKey" : "12345678", "anotherKey" : "823oi3-sjj39848-vvdse" }` | Y        | Data is ingested as an object of `string : string`. All keys and values must be entered in quotations and separated by commas.                                                                          |
+| `path`   | string                 | `"userKeys/dev"`                                                   | Y        | The path is where the secret will be contained inside the engine provided. Paths must not start or end with a forward slash ("/"). The provided example would resolve to `ENGINENAME/data/userKeys/dev` |
 
 ### Vault Secret Struct
 
 ```go
-
-type VaultSecret struct {
- Auth   VaultAuth `json:"authentication" validate:"required"`
- Secret []Secret  `json:"secret"`
-}
-
-type KV struct {
- Data map[string]interface{} `json:"data" validate:"required"`
- Path string                 `json:"path" validate:"required"`
-}
+  type VaultSecret struct {
+    Secret []Secret `json:"secret"`
+  }
 
 type Secret struct {
  Engine string `json:"engine"`
- Keys   []KV   `json:"kv"`
+ KV     []struct {
+  Data map[string]interface{} `json:"data" validate:"required"`
+  Path string                 `json:"path" validate:"required"`
+ } `json:"kv"`
 }
+
 ```
 
 ### Example Vault Secret Object
 
 ```json
 {
-  "authentication": {
-    "vaultToken": "dev-only-token",
-    "vaultUrl": "http://vault:8200"
-  },
   "secret": [
     {
       "engine": "apiengine",
@@ -194,18 +161,16 @@ type Secret struct {
 
 ### Vault Read Object
 
-| property         | type   | value example            | required | purpose                                          |
-| ---------------- | ------ | ------------------------ | -------- | ------------------------------------------------ |
-| `authentication` | object | `vaultToken`, `vaultUrl` | Y        | Authenticate with vault.                         |
-| `engine`         | string | `firebase`               | Y        | The KV-V2 engine from which to read a value      |
-| `path`           | string | `stripe/dev`             | Y        | Path to the secret in the aformentioned engine   |
-| `key`            | string | `private_api_key`        | Y        | The key for which to return a value              |
+| property | type   | value example     | required | purpose                                        |
+| -------- | ------ | ----------------- | -------- | ---------------------------------------------- |
+| `engine` | string | `firebase`        | Y        | The KV-V2 engine from which to read a value    |
+| `path`   | string | `stripe/dev`      | Y        | Path to the secret in the aformentioned engine |
+| `key`    | string | `private_api_key` | Y        | The key for which to return a value            |
 
 ### Vault Read Struct
 
 ```go
 type VaultRead struct {
- Auth   VaultAuth `json:"authentication" validate:"required"`
  Engine string    `json:"engine" validate:"required"`
  Path   string    `json:"path" validate:"required"`
  Key    string    `json:"key" validate:"required"`
@@ -217,10 +182,6 @@ type VaultRead struct {
 
 ```json
 {
-  "authentication": {
-    "vaultToken": "dev-only-token",
-    "vaultUrl": "http://vault:8200"
-  },
   "engine": "myfolder",
   "path": "stripe/dev",
   "key": "private_key"
@@ -250,31 +211,32 @@ Further, I needed to iterate over `engines` (folders in Vault-speak) and place s
 ```go
 types.go
 
-type kv struct {
- data map[string]interface{}
- path string
-}
-
-type secret struct {
- engine string
- keys   []kv
+type Secret struct {
+ Engine string
+ KV     []struct {
+  Data map[string]interface{}
+  Path string
+ }
 }
 ```
 
 ```go
 vault_config.go
 
-var sampleSecret = []*secret{
+var sampleSecret = []*Secret{
  {
-  engine: "my-engine",
-  keys: []kv{
+  Engine: "my-engine",
+  KV: []struct {
+   Data map[string]interface{}
+   Path string
+  }{
    {
-    data: map[string]interface{}{
+    Data: map[string]interface{}{
      "myKey":  "myValue",
      "myKey2": "myValue2",
     },
-    path: "my-path-1",
-   },
+    Path: "my-path-1"
+    },
   },
  },
 }
@@ -309,7 +271,9 @@ I wanted to make sure I could test many of these functions without needing to ma
 
 ### Pwgen
 
-This was built with the help of a medium article. It takes a string and creates a slice of runes and randomly selects a rune, converts it back to a string, and adds it to the return value. GenerateUUID uses Google's UUID generator. This can be helpful when setting up a fresh instance and setting some random passwords.
+This was built with the help of a medium article. Initially it used a simple RAND based on unix time. That is obviously not cryptographically secure, so I implemented a change using crypto/rand. It creates a slice of runes, iterates for the length of password passed adding a rune for the provided characters per iteration. It then returns the stringified version of the rune slice.
+
+GenerateUUID uses Google's UUID generator. This can be helpful when setting up a fresh instance and setting some random passwords.
 
 ### Validate Request Fields
 
