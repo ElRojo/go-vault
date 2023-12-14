@@ -22,7 +22,6 @@ type Vaulter interface {
 func (v *AcmeVault) createEngines(ctx context.Context, client *vault.Client, secret *Secret) (string, error) {
 	_, err := client.System.MountsEnableSecretsEngine(ctx, secret.Engine, schema.MountsEnableSecretsEngineRequest{Type: "kv-v2"})
 	if err != nil {
-		log.Warn().Err(err).Msg("err in createEngines")
 		return "", err
 	}
 	return "Processed: " + secret.Engine, nil
@@ -69,19 +68,17 @@ func CreateDataInVault(ctx context.Context, client *vault.Client, v Vaulter, s [
 
 	for _, secret := range s {
 		if !slices.Contains(engines, secret.Engine+"/") {
-			log.Warn().Msg("trying to create" + secret.Engine)
-			eng, err := v.createEngines(ctx, client, secret)
+			_, err := v.createEngines(ctx, client, secret)
 			if err != nil {
-				log.Warn().Err(err)
+				log.Warn().Err(err).Msg("create engines error")
 			}
-			log.Info().Msg("created: " + eng)
 		}
 		for _, kv := range secret.KV {
 			path := fmt.Sprintf("%v/data/%v", secret.Engine, kv.Path)
 			if err := v.writeSecret(ctx, client, path, kv.Data); err != nil {
 				log.Warn().Err(err)
 			} else {
-				log.Info().Msgf("Secrets in: %q written", path)
+				log.Info().Msgf("secrets in: %q written", path)
 			}
 		}
 	}
@@ -137,5 +134,5 @@ func InitVault(ctx context.Context, client *vault.Client, v Vaulter, s []*Secret
 	if err != nil {
 		return "", err
 	}
-	return "Vault complete", nil
+	return "success", nil
 }
