@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/rs/zerolog/log"
-
-	"time"
 
 	"github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
@@ -108,7 +107,7 @@ func (v *AcmeVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client
 }
 
 func InitVaultClient(token string, url string) (context.Context, *vault.Client, error) {
-	var ctx = context.Background()
+	ctx := context.Background()
 
 	client, err := vault.New(
 		vault.WithAddress(url),
@@ -116,12 +115,13 @@ func InitVaultClient(token string, url string) (context.Context, *vault.Client, 
 	)
 	if err != nil {
 		log.Warn().Err(err)
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("vault client initialization failed: %w", err)
+
 	}
 	err = client.SetToken(token)
 	if err != nil {
 		log.Warn().Err(err)
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("setting vault token failed: %w", err)
 	}
 
 	return ctx, client, nil
@@ -138,5 +138,4 @@ func InitVault(ctx context.Context, client *vault.Client, v Vaulter, s []*Secret
 		return "", err
 	}
 	return "Vault complete", nil
-
 }

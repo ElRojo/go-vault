@@ -41,12 +41,12 @@ docker-compose up
 
  ```JSON
  // Headers
- "Api-Key": "dev-only-token"
- "Vault-Url": "http://vault:8200"
+ "x-api-key": "dev-only-token"
+ "x-vault-url": "http://vault:8200"
 
 {
   "copyLegacy": false,
-  "useLegacy": false,
+  "useLegacy": false
 }
  ```
 

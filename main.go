@@ -5,9 +5,5 @@ import (
 )
 
 func main() {
-	s := &api.APIServer{
-		ListenerAddress: "4269",
-		CORS:            "*",
-	}
-	s.Run()
+	api.NewAPIServer(4269, "*").Run()
 }

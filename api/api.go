@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func makeHTTPHandlerFunc(f apiFunc) http.HandlerFunc {
@@ -28,4 +29,11 @@ func (s *APIServer) Run() {
 	http.Handle("/vault/", makeHTTPHandlerFunc(s.handleVault))
 	log.Println("Running server on port:", s.ListenerAddress)
 	http.ListenAndServe(":"+s.ListenerAddress, nil)
+}
+
+func NewAPIServer(listenerAddress int, CORS string) *APIServer {
+	return &APIServer{
+		ListenerAddress: strconv.Itoa(listenerAddress),
+		CORS:            CORS,
+	}
 }
