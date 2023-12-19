@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  vault:
+    image: vault:1.13.3
+    container_name: hashicorp-vault
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=dev-only-token
+  # command: >
+  #     bash -c ""
+
+  go-vault:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-vault
+    ports:
+      - "4269:4269"
+    depends_on:
+      - vault

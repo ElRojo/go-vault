@@ -3,7 +3,8 @@ on:
   push:
     paths-ignore:
       - 'README.md'
-    branches: main
+    branches:
+      - main
 
 jobs:
   go-test:
