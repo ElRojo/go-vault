@@ -24,7 +24,7 @@ func (v *AcmeVault) createEngines(ctx context.Context, client *vault.Client, sec
 	if err != nil {
 		return "", err
 	}
-	return "Processed: " + secret.Engine, nil
+	return "processed: " + secret.Engine, nil
 }
 
 func (v *AcmeVault) getSecretEngine(ctx context.Context, client *vault.Client) ([]string, error) {
