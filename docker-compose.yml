@@ -18,5 +18,7 @@ services:
     container_name: go-vault
     ports:
       - "4269:4269"
+    environment:
+      - LOG_LEVEL=DEBUG
     depends_on:
       - vault

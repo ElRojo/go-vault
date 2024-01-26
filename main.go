@@ -2,8 +2,11 @@ package main
 
 import (
 	"go-vault/api"
+	"go-vault/internal/utility"
 )
 
 func main() {
+	utility.InitLogger()
 	api.NewAPIServer(4269, "*").Run()
+	
 }

@@ -3,6 +3,7 @@ package vault
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"slices"
 	"time"
 
@@ -12,11 +13,47 @@ import (
 	"github.com/hashicorp/vault-client-go/schema"
 )
 
+type vaultFunc func() (*vault.Response[map[string]interface{}], error)
+
 type Vaulter interface {
 	createEngines(ctx context.Context, client *vault.Client, secret *Secret) (string, error)
 	getSecretEngine(ctx context.Context, client *vault.Client) ([]string, error)
 	hydrateNewSecretsStruct(ctx context.Context, c *vault.Client, s []*Secret, secretMap map[string]secretMap) error
 	writeSecret(ctx context.Context, client *vault.Client, path string, data map[string]interface{}) error
+}
+
+func InitVaultClient(token string, url string) (context.Context, *vault.Client, error) {
+	ctx := context.Background()
+
+	client, err := vault.New(
+		vault.WithAddress(url),
+		vault.WithRequestTimeout(10*time.Second),
+	)
+	if err != nil {
+		log.Warn().Err(err)
+		return nil, nil, fmt.Errorf("vault client initialization failed: %w", err)
+
+	}
+	err = client.SetToken(token)
+	if err != nil {
+		log.Warn().Err(err)
+		return nil, nil, fmt.Errorf("setting vault token failed: %w", err)
+	}
+
+	return ctx, client, nil
+}
+
+func InitVault(ctx context.Context, client *vault.Client, v Vaulter, s []*Secret, c VaultConfig) (string, error) {
+	if !c.Legacy && c.Copy {
+		sm := initSecretMap()
+		v.hydrateNewSecretsStruct(ctx, client, s, sm)
+	}
+
+	err := CreateDataInVault(ctx, client, v, s)
+	if err != nil {
+		return "", err
+	}
+	return "success", nil
 }
 
 func (v *AcmeVault) createEngines(ctx context.Context, client *vault.Client, secret *Secret) (string, error) {
@@ -41,8 +78,10 @@ func (v *AcmeVault) getSecretEngine(ctx context.Context, client *vault.Client) (
 }
 
 func (v *AcmeVault) writeSecret(ctx context.Context, client *vault.Client, path string, data map[string]interface{}) error {
-	if _, err := client.Write(ctx, path, map[string]interface{}{"data": data}); err != nil {
-		log.Warn().Err(err).Msg("")
+	log.Debug().Msgf("writing secrets to: %v", path)
+	if err := retryVaultFunc(func() (*vault.Response[map[string]interface{}], error) {
+		return client.Write(ctx, path, map[string]interface{}{"data": data})
+	}, 3, 2); err != nil {
 		return err
 	}
 	return nil
@@ -103,36 +142,22 @@ func (v *AcmeVault) hydrateNewSecretsStruct(ctx context.Context, c *vault.Client
 	return nil
 }
 
-func InitVaultClient(token string, url string) (context.Context, *vault.Client, error) {
-	ctx := context.Background()
+func retryVaultFunc(fn vaultFunc, attempts, sleep int) error {
+	var err error
+	for i := 0; i < attempts; i++ {
+		if i > 0 {
+			log.Warn().Msgf("retrying after error: %v", err)
+			time.Sleep(time.Duration(sleep) * time.Second)
+			sleep *= 2
+		}
+		_, err = fn()
 
-	client, err := vault.New(
-		vault.WithAddress(url),
-		vault.WithRequestTimeout(10*time.Second),
-	)
-	if err != nil {
-		log.Warn().Err(err)
-		return nil, nil, fmt.Errorf("vault client initialization failed: %w", err)
-
+		if err == nil {
+			return nil
+		}
+		if !vault.IsErrorStatus(err, http.StatusBadRequest) {
+			return err
+		}
 	}
-	err = client.SetToken(token)
-	if err != nil {
-		log.Warn().Err(err)
-		return nil, nil, fmt.Errorf("setting vault token failed: %w", err)
-	}
-
-	return ctx, client, nil
-}
-
-func InitVault(ctx context.Context, client *vault.Client, v Vaulter, s []*Secret, c VaultConfig) (string, error) {
-	if !c.Legacy && c.Copy {
-		sm := initSecretMap()
-		v.hydrateNewSecretsStruct(ctx, client, s, sm)
-	}
-
-	err := CreateDataInVault(ctx, client, v, s)
-	if err != nil {
-		return "", err
-	}
-	return "success", nil
+	return fmt.Errorf("after %d attempts, last error: %s", attempts, err)
 }
