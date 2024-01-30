@@ -37,7 +37,7 @@ docker-compose up
 
 4. Log in using **Method: Token** with the following credentials: `dev-only-token`
 
-5. Send a POST request to [http://localhost:4269/vault](http://localhost:4269/vault) with the following JSON object to test. See the [Request Documentation](#request-documentation) for finer details.
+5. Send a POST request to [http://localhost:4269/vault](http://localhost:4269/vault/init) with the following JSON object to test. See the [Request Documentation](#request-documentation) for finer details.
 
  ```JSON
  // Headers
@@ -68,7 +68,7 @@ Requests require two headers for authenticating.
 ### Vault Endpoint
 
 <details>
- <summary><b> http://localhost:4269/vault </b></summary>
+ <summary><b> http://localhost:4269/vault/init </b></summary>
 
 ## POST
 
