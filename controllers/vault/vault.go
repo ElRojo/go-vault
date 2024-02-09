@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -100,6 +101,8 @@ func ReadSecret(ctx context.Context, c *vault.Client, path string, secret string
 }
 
 func CreateDataInVault(ctx context.Context, client *vault.Client, v Vaulter, s []*Secret) error {
+	var wg sync.WaitGroup
+
 	engines, err := v.getSecretEngine(ctx, client)
 	if err != nil {
 		return err
@@ -107,20 +110,34 @@ func CreateDataInVault(ctx context.Context, client *vault.Client, v Vaulter, s [
 
 	for _, secret := range s {
 		if !slices.Contains(engines, secret.Engine+"/") {
-			_, err := v.createEngines(ctx, client, secret)
-			if err != nil {
-				log.Warn().Err(err).Msg("create engines error")
-			}
+			wg.Add(1)
+			go func(secret *Secret) {
+				defer wg.Done()
+				_, err := v.createEngines(ctx, client, secret)
+				if err != nil {
+					log.Warn().Err(err).Msg("create engines error")
+				}
+			}(secret)
 		}
 		for _, kv := range secret.KV {
-			path := fmt.Sprintf("%v/data/%v", secret.Engine, kv.Path)
-			if err := v.writeSecret(ctx, client, path, kv.Data); err != nil {
-				log.Warn().Err(err)
-			} else {
-				log.Info().Msgf("secrets in: %q written", path)
-			}
+			wg.Add(1)
+			go func(secret *Secret, kv struct {
+				Data map[string]interface{}
+				Path string
+			}) {
+				defer wg.Done()
+				path := fmt.Sprintf("%v/data/%v", secret.Engine, kv.Path)
+				if err := v.writeSecret(ctx, client, path, kv.Data); err != nil {
+					log.Warn().Err(err)
+				} else {
+					log.Info().Msgf("secrets in: %q written", path)
+				}
+			}(secret, kv)
 		}
 	}
+
+	wg.Wait()
+
 	return nil
 }
 
