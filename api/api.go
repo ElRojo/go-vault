@@ -1,10 +1,16 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
-	"log"
+	"errors"
 	"net/http"
-	"strconv"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 func makeHTTPHandlerFunc(f apiFunc) http.HandlerFunc {
@@ -27,13 +33,33 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 
 func (s *APIServer) Run() {
 	http.Handle("/vault/", makeHTTPHandlerFunc(s.handleVault))
-	log.Println("Running server on port:", s.ListenerAddress)
-	http.ListenAndServe(":"+s.ListenerAddress, nil)
+	log.Info().Msgf("server listening on port %v", s.srv.Addr)
+
+	go func() {
+		if err := s.srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal().Msgf("server closed: %v", err)
+		}
+		log.Debug().Msg("halting service...")
+	}()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownRelease()
+
+	if err := s.srv.Shutdown(shutdownCtx); err != nil {
+		log.Fatal().Msgf("server err: %v", err)
+	}
+	log.Info().Msgf("server on port %v closed", s.srv.Addr)
 }
 
-func NewAPIServer(listenerAddress int, CORS string) *APIServer {
+func NewAPIServer(listenerAddress string, CORS string) *APIServer {
 	return &APIServer{
-		ListenerAddress: strconv.Itoa(listenerAddress),
-		CORS:            CORS,
+		CORS: CORS,
+		srv: &http.Server{
+			Addr: listenerAddress,
+		},
 	}
 }

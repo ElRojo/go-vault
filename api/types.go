@@ -9,8 +9,8 @@ import (
 type apiFunc func(w http.ResponseWriter, r *http.Request) error
 
 type APIServer struct {
-	ListenerAddress string
-	CORS            string
+	CORS string
+	srv  *http.Server
 }
 
 type APIError struct {

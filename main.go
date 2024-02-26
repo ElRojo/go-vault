@@ -7,6 +7,5 @@ import (
 
 func main() {
 	utility.InitLogger()
-	api.NewAPIServer(4269, "*").Run()
-	
+	api.NewAPIServer(":5464", "*").Run()
 }
