@@ -23,11 +23,11 @@ func TestValidateRequestFields(t *testing.T) {
 		"vaultUrl":   "http://vault:8200"
 	}`
 	if err := json.NewDecoder(strings.NewReader(req)).Decode(&testVaultReq); err != nil {
-		log.Error().Err(err)
+		log.Error().Err(err).Msg("")
 	}
 	err := ValidateRequestFields(testVaultReq)
 	if ok := assert.NoError(t, err); !ok {
-		log.Error().Err(err)
+		log.Error().Err(err).Msg("")
 	}
 }
 
@@ -35,7 +35,7 @@ func TestValidateRequestFieldsFail(t *testing.T) {
 	testVaultReq := &vaultRequestTest{}
 	req := `{}`
 	if err := json.NewDecoder(strings.NewReader(req)).Decode(&testVaultReq); err != nil {
-		log.Error().Err(err)
+		log.Error().Err(err).Msg("")
 	}
 	err := ValidateRequestFields(testVaultReq)
 	if ok := assert.Error(t, err, err); !ok {

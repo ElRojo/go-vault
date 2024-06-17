@@ -75,7 +75,7 @@ func TestVaultLegacy(t *testing.T) {
 	}
 	r, err := InitVault(ctx, client, v, secrets, c)
 	if err != nil {
-		log.Err(err)
+		log.Err(err).Msg("")
 	}
 	log.Info().Msg(r)
 }
@@ -95,7 +95,7 @@ func TestVaultNew(t *testing.T) {
 	}
 	r, err := InitVault(ctx, client, v, secrets, c)
 	if err != nil {
-		log.Err(err)
+		log.Err(err).Msg("")
 	}
 	log.Info().Msg(r)
 }
@@ -111,11 +111,11 @@ func TestVaultNewWithCopy(t *testing.T) {
 	secrets := InitNewSecrets()
 	ctx, client, err := InitVaultClient(c.Token, c.URL)
 	if err != nil {
-		log.Err(err)
+		log.Err(err).Msg("")
 	}
 	r, err := InitVault(ctx, client, v, secrets, c)
 	if err != nil {
-		log.Err(err)
+		log.Err(err).Msg("")
 	}
 	log.Info().Msg(r)
 }

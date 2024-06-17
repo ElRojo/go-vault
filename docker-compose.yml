@@ -17,7 +17,7 @@ services:
       dockerfile: Dockerfile
     container_name: go-vault
     ports:
-      - "4269:4269"
+      - "5464:5464"
     environment:
       - LOG_LEVEL=DEBUG
     depends_on:

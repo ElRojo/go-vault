@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"go-vault/controllers/vault"
 	"go-vault/internal/utility"
@@ -23,7 +22,7 @@ func (s *APIServer) handleVault(w http.ResponseWriter, r *http.Request) error {
 
 	ctx, client, err := vault.InitVaultClient(token, URL)
 	if err != nil {
-		return WriteJSON(w, 500, APIError{Error: "initialization failed"})
+		return WriteJSON(w, http.StatusInternalServerError, APIError{Error: err.Error()})
 	}
 
 	switch r.Method {
@@ -74,7 +73,7 @@ func (s *APIServer) handleCreateSecret(w http.ResponseWriter, r *http.Request, c
 	}
 
 	if err := vault.CreateDataInVault(ctx, client, &vaultInstance, secrets); err != nil {
-		return errors.Unwrap(err)
+		return WriteJSON(w, http.StatusBadRequest, APIError{Error: err.Error()})
 	}
 
 	return WriteJSON(w, http.StatusOK, req)
@@ -123,7 +122,7 @@ func (s *APIServer) handleInitVault(w http.ResponseWriter, r *http.Request, ctx 
 		Legacy: *req.UseLegacy,
 	})
 	if err != nil {
-		return errors.Unwrap(err)
+		return WriteJSON(w, http.StatusForbidden, APIError{Error: err.Error()})
 	}
 
 	return WriteJSON(w, http.StatusOK, map[string]*VaultInit{v: &req})

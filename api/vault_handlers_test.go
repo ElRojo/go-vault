@@ -61,7 +61,7 @@ func TestSecretConversion(t *testing.T) {
 	json.Unmarshal([]byte(mockPayload), &secret)
 	var vaultSecret, err = convertVaultSecret(secret)
 	if err != nil {
-		log.Error().Err(err)
+		log.Error().Err(err).Msg("")
 	}
 	ok := assert.IsType(t, v, vaultSecret)
 	if !ok {

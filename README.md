@@ -33,11 +33,11 @@ Before you begin, make sure you have [Docker](https://www.docker.com/get-started
 docker-compose up
 ```
 
-3. After the containers have started, access the HashiCorp Vault front-end at [http://localhost:8200](http://localhost:8200) and the API is served on [http://localhost:4269](http://localhost:4269)
+3. After the containers have started, access the HashiCorp Vault front-end at [http://localhost:8200](http://localhost:8200) and the API is served on [http://localhost:5464](http://localhost:5464)
 
 4. Log in using **Method: Token** with the following credentials: `dev-only-token`
 
-5. Send a POST request to [http://localhost:4269/vault](http://localhost:4269/vault/init) with the following JSON object to test. See the [Request Documentation](#request-documentation) for finer details.
+5. Send a POST request to [http://localhost:5464/vault/init](http://localhost:5464/vault/init) with the following JSON object to test. See the [Request Documentation](#request-documentation) for finer details.
 
  ```JSON
  // Headers
@@ -68,7 +68,7 @@ Requests require two headers for authenticating.
 ### Vault Endpoint
 
 <details>
- <summary><b> http://localhost:4269/vault/init </b></summary>
+ <summary><b> http://localhost:5464/vault/init </b></summary>
 
 ## POST
 
@@ -105,7 +105,7 @@ type VaultRequest struct {
 ### Vault/Secret Endpoint
 
 <details>
- <summary><b> http://localhost:4269/vault/secret </b></summary>
+ <summary><b> http://localhost:5464/vault/secret </b></summary>
 
 ## POST
 

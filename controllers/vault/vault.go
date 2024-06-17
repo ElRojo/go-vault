@@ -31,14 +31,14 @@ func InitVaultClient(token string, url string) (context.Context, *vault.Client, 
 		vault.WithRequestTimeout(10*time.Second),
 	)
 	if err != nil {
-		log.Warn().Err(err)
-		return nil, nil, fmt.Errorf("vault client initialization failed: %w", err)
+		log.Error().Err(err).Msg("")
+		return nil, nil, err
 
 	}
 	err = client.SetToken(token)
 	if err != nil {
-		log.Warn().Err(err)
-		return nil, nil, fmt.Errorf("setting vault token failed: %w", err)
+		log.Error().Err(err).Msg("")
+		return nil, nil, err
 	}
 
 	return ctx, client, nil
@@ -69,7 +69,7 @@ func (v *AcmeVault) getSecretEngine(ctx context.Context, client *vault.Client) (
 	engineSlice := []string{}
 	engs, err := client.System.MountsListSecretsEngines(ctx)
 	if err != nil {
-		log.Warn().Err(err).Msg("")
+		log.Error().Err(err).Msg("")
 		return nil, err
 	}
 	for eng := range engs.Data {
@@ -128,7 +128,7 @@ func CreateDataInVault(ctx context.Context, client *vault.Client, v Vaulter, s [
 				defer wg.Done()
 				path := fmt.Sprintf("%v/data/%v", secret.Engine, kv.Path)
 				if err := v.writeSecret(ctx, client, path, kv.Data); err != nil {
-					log.Warn().Err(err)
+					log.Warn().Err(err).Msg("")
 				} else {
 					log.Info().Msgf("secrets in: %q written", path)
 				}
