@@ -122,9 +122,13 @@ func (s *APIServer) handleInitVault(w http.ResponseWriter, r *http.Request, ctx 
 		Legacy: *req.UseLegacy,
 	})
 	if err != nil {
-		return WriteJSON(w, http.StatusForbidden, APIError{Error: err.Error()})
+		switch err.Error() {
+		case "403: permission denied":
+			return WriteJSON(w, http.StatusForbidden, APIError{Error: "permission denied"})
+		default:
+			return WriteJSON(w, http.StatusInternalServerError, APIError{Error: err.Error()})
+		}
 	}
-
 	return WriteJSON(w, http.StatusOK, map[string]*VaultInit{v: &req})
 }
 

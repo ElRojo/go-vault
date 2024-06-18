@@ -14,7 +14,7 @@ type APIServer struct {
 }
 
 type APIError struct {
-	Error string
+	Error string `json:"error"`
 }
 
 type APIResponse[T any] struct {
